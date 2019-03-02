@@ -1,17 +1,76 @@
+const gmailServiceBa = require("../app/bc/GmailService/control/GmailServiceBa");
 const {expect, assert} = require('chai');
+const {pluck, take} = require('rxjs/operators');
 const util = require('util');
-const gmailServiceBa = require('../app/bc/googleservice/control/GmailServiceBa');
 
 describe('Get Gmail labels', function () {
 
-    it('should get gmail labels successfully', async function () {
-        try {
-            console.log(process.env.GOOGLE_APPLICATION_CREDENTIALS);
-            const labels = await gmailServiceBa.getLabels();
-            console.log(labels);
-        }catch (e) {
-            console.error(util.inspect(e));
-        }
+    it('should get gmail labels successfully', function (done) {
+        let labels;
+        gmailServiceBa.getLabels().subscribe(
+            lbs => labels = lbs,
+            err => {
+                console.error(err);
+                done(new Error('Failed to get gmail labels'));
+            },
+            () => {
+                expect(labels).to.be.an('array').that.is.not.empty;
+                done();
+            }
+        );
+
     });
+
+    it('should find a specific gmail label successfully', function (done) {
+        const nameToFind = 'UNREAD';
+        let label;
+        gmailServiceBa.findLabelByName(nameToFind).subscribe(
+            lbl => label = lbl,
+            err => {
+                console.error(err);
+                done(new Error(`Failed to find specific gmail label`));
+            },
+            () => {
+                expect(label['name']).to.eql(nameToFind);
+                expect(label['id']).not.to.be.null;
+                done();
+            }
+        );
+    });
+
+    it('should find messages for a specific gmail label successfully', function (done) {
+        const labelName = 'UNREAD';
+        const chunkSize = 5;
+        let messages = [];
+        gmailServiceBa.findMessagesByLabel(labelName, chunkSize).pipe(take(2)).subscribe(
+            msg => messages.push(msg),
+            err => {
+                console.error(err);
+                done(new Error(`Failed to find messages for a specific gmail label`));
+            },
+            () => {
+                console.log(`Messages: ${util.inspect(messages)}`);
+                expect(messages).to.be.an('array').that.is.not.empty;
+                done();
+            }
+        );
+    });
+
+    it('should find all attachments for messages with in a specific label successfully', function (done) {
+        const labelName = 'FNB Cheque Statements';
+        let attachments = [];
+        gmailServiceBa.findAttachmentsByLabel(labelName).pipe(take(2)).subscribe(
+            msg => attachments.push(msg),
+            err => {
+                console.error(err);
+                done(new Error(`Failed to find attachments for a specific gmail label`));
+            },
+            () => {
+                console.log(`Attachments: ${util.inspect(attachments)}`);
+                expect(attachments).to.be.an('array').that.is.not.empty;
+                done();
+            }
+        );
+    })
 
 });
