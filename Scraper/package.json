@@ -9,9 +9,12 @@
   "author": "Joseph Okharedia",
   "license": "ISC",
   "dependencies": {
+    "csv-parse": "^4.3.3",
+    "event-stream": "^4.0.1",
     "googleapis": "^37.2.0",
     "http-debug": "^0.1.2",
-    "rxjs": "^6.4.0"
+    "rxjs": "^6.4.0",
+    "moment": "^2.22.2"
   },
   "devDependencies": {
     "chai": "^4.2.0",

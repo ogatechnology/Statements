@@ -55,7 +55,8 @@ const attachmentsByLabel$ = (labelName, attachmentExtension) =>
                     messageId: msg.id,
                     id: attachmentId
                 })),
-                pluck('data', 'data')
+                pluck('data', 'data'),
+                map(data => Buffer.from(data, 'base64').toString('utf8'))
             )
         ),
     );
