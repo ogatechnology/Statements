@@ -4,7 +4,7 @@ const {from, of} = require('rxjs');
 const util = require('util');
 const {mergeAll, mergeMap, expand, tap, shareReplay, concatMap, pluck, concatAll, take, filter} = require('rxjs/operators');
 
-const gmail$ = googleAuthBf.getAuthClient().pipe(
+const gmail$ = googleAuthBf.getAuthClient$().pipe(
     concatMap(authClient => of(google.gmail({version: 'v1', auth: authClient}))),
     shareReplay(1)
 );

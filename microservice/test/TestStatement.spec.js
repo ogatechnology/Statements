@@ -1,7 +1,5 @@
-const attachmentBa = require("../app/bc/StatementService/control/AttachmentBa");
-const {expect, assert} = require('chai');
-const {pluck, take} = require('rxjs/operators');
-const util = require('util');
+const statementBa = require("../app/bc/statementservice/control/StatementBa");
+const {expect} = require('chai');
 const fs = require('fs');
 const path = require('path');
 
@@ -11,7 +9,7 @@ describe('Create statement from attachment', function () {
         let statement;
         fs.readFile(path.join(__dirname, 'resources', 'FNB-Statement.csv'), {encoding: 'utf8'}, (err, data) => {
 
-            attachmentBa.createStatement(data).subscribe(
+            statementBa.createStatement$(data).subscribe(
                 (stmt) => statement = stmt,
                 (err) => {
                     console.error(err);
@@ -37,7 +35,7 @@ describe('Create statement from attachment', function () {
         let statement;
         fs.readFile(path.join(__dirname, 'resources', 'Nedbank-Statement.csv'), {encoding: 'utf8'}, (err, data) => {
 
-            attachmentBa.createStatement(data).subscribe(
+            statementBa.createStatement$(data).subscribe(
                 (stmt) => statement = stmt,
                 (err) => {
                     console.error(err);

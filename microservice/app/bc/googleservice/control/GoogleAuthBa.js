@@ -3,7 +3,7 @@ const {of,from} = require('rxjs');
 const {shareReplay, concatMap} = require('rxjs/operators');
 
 
-function getAuthClient() {
+function getAuthClient$() {
     return authClient$;
 }
 
@@ -21,4 +21,4 @@ const authClient$ = from(google.auth.getClient({
 );
 
 
-module.exports = {getAuthClient};
+module.exports = {getAuthClient$};

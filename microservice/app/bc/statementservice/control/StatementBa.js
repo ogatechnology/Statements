@@ -10,7 +10,7 @@ const FNB_REGEX = /^(2,)[0-9]+(,')[A-Za-z\s]+(',')[A-Za-z\s]+(')/;
 const NEDBANK_REGEX = /^(Statement Enquiry)\s:/;
 const util = require('util');
 
-function createStatement(attachment) {
+function createStatement$(attachment) {
     if (!attachment) {
         throw Error(`Attachment ${attachment} must be valid`);
     }
@@ -126,4 +126,4 @@ const attachmentToTransactionTransformerFactory = (attachment) => {
     throw Error(`Attachment not supported!`);
 };
 
-module.exports = {createStatement};
+module.exports = {createStatement$};

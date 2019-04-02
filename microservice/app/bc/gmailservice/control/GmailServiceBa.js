@@ -1,30 +1,29 @@
-const {mergeAll, mergeMap, expand, tap, concatMap, pluck, concatAll, take, filter} = require('rxjs/operators');
-const GMAIL_MESSAGES_DEFAULT_CHUNK_SIZE = 10;
+const {mergeAll, mergeMap, expand, map, tap, concatMap, pluck, concatAll, take, filter} = require('rxjs/operators');
+const GMAIL_MESSAGES_DEFAULT_CHUNK_SIZE = process.env.GMAIL_MESSAGES_DEFAULT_CHUNK_SIZE || 100;
 const GMAIL_ATTACHMENT_DEFAULT_EXTENSION = 'csv';
 const {listGmailResource$, getGmailResource$} = require('./GmailHelper');
 
-function getLabels() {
+function getLabels$() {
     return labels$;
 }
 
-function findLabelByName(name) {
+function findLabelByName$(name) {
     return labelByName$(name);
 }
 
-function findMessagesByLabel(labelName, chunkSize = GMAIL_MESSAGES_DEFAULT_CHUNK_SIZE) {
-    return messagesByLabel$(labelName, chunkSize);
+function findMessagesByLabel$(labelName) {
+    return messagesByLabel$(labelName);
 }
 
-function findAttachmentsByLabel(labelName, attachmentExtension = GMAIL_ATTACHMENT_DEFAULT_EXTENSION) {
+function findAttachmentsByLabel$(labelName, attachmentExtension = GMAIL_ATTACHMENT_DEFAULT_EXTENSION) {
     return attachmentsByLabel$(labelName, attachmentExtension);
 }
-
 
 const labels$ = listGmailResource$('labels').pipe(pluck('data', 'labels'));
 
 const labelByName$ = (name) => labels$.pipe(concatAll(), filter(l => l.name === name), take(1));
 
-const messagesByLabel$ = (labelName, chunkSize) =>
+const messagesByLabel$ = (labelName, chunkSize = GMAIL_MESSAGES_DEFAULT_CHUNK_SIZE) =>
     labelByName$(labelName).pipe(
         pluck('id'),
         concatMap(labelId => {
@@ -50,7 +49,6 @@ const attachmentsByLabel$ = (labelName, attachmentExtension) =>
                 mergeAll(),
                 filter(part => !attachmentExtension || (attachmentExtension && part.filename.endsWith(attachmentExtension))),
                 pluck('body', 'attachmentId'),
-                tap(id => console.log(`ATTACH_ID: ${id}`)),
                 mergeMap(attachmentId => getGmailResource$(['messages', 'attachments'], {
                     messageId: msg.id,
                     id: attachmentId
@@ -62,4 +60,4 @@ const attachmentsByLabel$ = (labelName, attachmentExtension) =>
     );
 
 
-module.exports = {getLabels, findLabelByName, findMessagesByLabel, findAttachmentsByLabel};
+module.exports = {getLabels$, findLabelByName$, findMessagesByLabel$, findAttachmentsByLabel$};
