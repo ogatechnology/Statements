@@ -1,10 +1,11 @@
 const elasticsearch = require('elasticsearch');
+const URL = process.env.APP_ELASTICSEARCH_URL || 'localhost:9200';
 const client = new elasticsearch.Client({
-    host: 'localhost:9200',
+    host: URL,
     // log: 'trace'
 });
-const INDEX = process.env.ES_INDEX || 'transactions';
-const TYPE = process.env.ES_INDEX_TYPE || '_doc';
+const INDEX = process.env.APP_ELASTICSEARCH_INDEX || 'transactions';
+const TYPE = '_doc';
 
 async function saveTransactions(transactions) {
     const bulkRequests = [];

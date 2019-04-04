@@ -5,15 +5,16 @@ const {from} = require('rxjs');
 const {mergeMap, tap} = require('rxjs/operators');
 const util = require('util');
 const app = express();
-const PORT = process.env.APP_PORT || 3000;
+const PORT = process.env.APP_SERVER_PORT || 3000;
 const gmailService = require('./bc/gmailservice/boundary/GmailServiceBf');
 const statementService = require('./bc/statementservice/boundary/StatementBf');
 const elasticService = require('./bc/elasticsearchservice/boundary/ElasticSearchBf');
 
 app.get('/', (req, res) => res.send('pong'));
 app.get('/statements/:label', (req, res) => {
+    const force = req.query.force;
     try {
-        key.acquireLock();
+        !force && key.acquireLock();
     } catch (e) {
         res.send(`scraping was last run ${e.message} and might still be in process. Please try again later.`);
         return;
@@ -29,12 +30,14 @@ app.get('/statements/:label', (req, res) => {
     gmailService.findAttachmentsByLabel$(label).pipe(
         tap(() => countStatements++),
         mergeMap(att => statementService.createStatementFromAttachment$(att)),
-        tap((stmt) => countTransactions += stmt.transactions.length),
+        tap((stmt) => {
+            console.log(`Processing statement ${stmt.statementNumber}`);
+            countTransactions += stmt.transactions.length;
+        }),
         mergeMap(stmt => from(elasticService.saveStatement(stmt))))
         .subscribe
         (
-            (transactions) => {
-            },
+            () => console.log(`Counted ${countTransactions} transactions so far`),
             (e) => console.error(`Error scraping statements in label:${label} ex:${e}`, e),
             () => {
                 console.log(`Imported ${countStatements} statements and ${countTransactions} transactions`);

@@ -3,8 +3,8 @@ const util = require('util');
 const MAPPING = require('./testdata/Mapping');
 const DOCUMENTS = require('./testdata/Documents');
 const assert = require("assert");
-const INDEX = process.env.ES_INDEX || 'transactions';
-const TYPE = process.env.ES_INDEX_TYPE || '_doc';
+const INDEX = process.env.APP_ELASTICSEARCH_INDEX || 'transactions';
+const TYPE = '_doc';
 
 const client = new elasticsearch.Client({
     host: 'localhost:9200',

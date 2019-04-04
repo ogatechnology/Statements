@@ -1,6 +1,7 @@
 const {google} = require('googleapis');
 const {of,from} = require('rxjs');
 const {shareReplay, concatMap} = require('rxjs/operators');
+const GOOGLE_AUTHORIZED_EMAIL_ADDRESS = process.env.APP_GOOGLE_AUTHORIZED_EMAIL_ADDRESS;
 
 
 function getAuthClient$() {
@@ -14,7 +15,7 @@ const authClient$ = from(google.auth.getClient({
     ]
 })).pipe(
     concatMap(authClient => {
-        authClient.subject = process.env.GOOGLE_AUTH_IMPERSONATE || 'joseph@okharedia.com';
+        authClient.subject = GOOGLE_AUTHORIZED_EMAIL_ADDRESS;
         return of(authClient);
     }),
     shareReplay(1)
