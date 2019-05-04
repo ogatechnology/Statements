@@ -1,20 +1,23 @@
-const key = require('./key');
+const lock = require('./Lock');
 const express = require('express');
-const moment = require('moment');
-const {from} = require('rxjs');
-const {mergeMap, tap} = require('rxjs/operators');
+const moment = require('moment/moment');
+const url = require('url');
+const {from} = require('rxjs/index');
+const {mergeMap, tap} = require('rxjs/operators/index');
 const util = require('util');
-const app = express();
 const PORT = process.env.APP_SERVER_PORT || 3000;
 const gmailService = require('./bc/gmailservice/boundary/GmailServiceBf');
 const statementService = require('./bc/statementservice/boundary/StatementBf');
 const elasticService = require('./bc/elasticsearchservice/boundary/ElasticSearchBf');
+const app = express();
+
 
 app.get('/', (req, res) => res.send('pong'));
 app.get('/statements/:label', (req, res) => {
-    const force = req.query.force;
+    const {query} = url.parse(req.url, true);
+    const force = query['force'] !== undefined && query['force'] !== 'false' && query['force'] !== false ;
     try {
-        !force && key.acquireLock();
+        !force && lock.acquireLock();
     } catch (e) {
         res.send(`scraping was last run ${e.message} and might still be in process. Please try again later.`);
         return;
@@ -22,12 +25,23 @@ app.get('/statements/:label', (req, res) => {
 
 
     const label = req.params['label'];
+    if (query['fromDate'] && !moment(query['fromDate']).isValid()) {
+        res.send(`From date is invalid at: ${moment(query['fromDate']).invalidAt()}`);
+        return;
+    }
+    if (query['toDate'] && !moment(query['toDate']).isValid()) {
+        res.send(`To date is invalid at: ${moment(query['toDate']).invalidAt()}`);
+        return;
+    }
+    const fromDate = (query['fromDate'] && moment(query['fromDate']).toDate()) || new Date();
+    const toDate = (query['toDate'] && moment(query['toDate']).toDate()) || new Date();
+
     res.send(moment());
-    console.log(`Retrieving statement in label:${label}`);
+    console.log(`Retrieving statement in label:${label} fromDate:${fromDate}, toDate:${toDate}`);
     const startTime = moment();
     let countStatements = 0;
     let countTransactions = 0;
-    gmailService.findAttachmentsByLabel$(label).pipe(
+    gmailService.findAttachmentsByLabel$(label, fromDate, toDate).pipe(
         tap(() => countStatements++),
         mergeMap(att => statementService.createStatementFromAttachment$(att)),
         tap((stmt) => {

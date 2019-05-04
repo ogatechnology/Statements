@@ -1,8 +1,8 @@
-const googleAuthBf = require("../../GoogleService/boundary/GoogleAuthBf");
-const {google} = require('googleapis');
-const {from, of} = require('rxjs');
+const googleAuthBf = require("../../googleservice/boundary/GoogleAuthBf");
+const {google} = require('googleapis/build/src/index');
+const {from, of} = require('rxjs/index');
 const util = require('util');
-const {mergeAll, mergeMap, expand, tap, shareReplay, concatMap, pluck, concatAll, take, filter} = require('rxjs/operators');
+const {mergeAll, mergeMap, expand, tap, shareReplay, concatMap, pluck, concatAll, take, filter} = require('rxjs/operators/index');
 
 const gmail$ = googleAuthBf.getAuthClient$().pipe(
     concatMap(authClient => of(google.gmail({version: 'v1', auth: authClient}))),

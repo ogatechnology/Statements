@@ -1,5 +1,5 @@
 const stream = require('stream');
-const moment = require('moment');
+const moment = require('moment/moment');
 module.exports = class FNBTransactionTransformer extends stream.Transform {
     constructor() {
         super({writableObjectMode: true, readableObjectMode: true, objectMode: true});

@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: statements
+  labels:
+    app: statements
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: statements
+  template:
+    metadata:
+      labels:
+        app: statements
+    spec:
+      containers:
+        - name: statements
+          image: ogatechnology/statements
+          volumeMounts:
+            - name: credentials-data
+              mountPath: "/etc/statements/"
+          env:
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/etc/statements/google-application-credentials.json"
+            - name: APP_GOOGLE_AUTHORIZED_EMAIL_ADDRESS
+              value: "joseph@okharedia.com"
+            - name: APP_GMAIL_GET_MESSAGES_CHUNK_SIZE
+              value: "100"
+            - name: APP_ELASTICSEARCH_URL
+              value: "http://elasticsearch:9200"
+            - name: APP_ELASTICSEARCH_INDEX
+              value: "transactions"
+            - name: APP_WAITING_PERIOD_BEFORE_NEXT_RUN_IN_SECONDS
+              value: "500"
+          ports:
+            - containerPort: 3000
+      volumes:
+        - name: credentials-data
+          configMap:
+              name: credentials-google
