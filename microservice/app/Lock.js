@@ -1,5 +1,5 @@
 const fs = require('fs');
-const moment = require('moment');
+const moment = require('moment/moment');
 const RUN_LOCK_FILE = 'run.lock';
 const WAITING_PERIOD_BEFORE_NEXT_RUN_IN_SECONDS = process.env.APP_WAITING_PERIOD_BEFORE_NEXT_RUN_IN_SECONDS || 120;
 

@@ -1,6 +1,6 @@
-const {google} = require('googleapis');
-const {of,from} = require('rxjs');
-const {shareReplay, concatMap} = require('rxjs/operators');
+const {google} = require('googleapis/build/src/index');
+const {of,from} = require('rxjs/index');
+const {shareReplay, concatMap} = require('rxjs/operators/index');
 const GOOGLE_AUTHORIZED_EMAIL_ADDRESS = process.env.APP_GOOGLE_AUTHORIZED_EMAIL_ADDRESS;
 
 

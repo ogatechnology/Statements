@@ -1,4 +1,4 @@
-const moment = require('moment');
+const moment = require('moment/moment');
 const hash = require('object-hash');
 const util = require('util');
 const elasticSearchEsi = require('../integration/ElasticSearchEsi');
@@ -15,8 +15,8 @@ async function saveStatement(statement) {
 
 function createElasticSearchTransactionsFromStatement(statement) {
     const transactions = [];
-    statement.transactions.forEach(t => {
-        t.id = hash.sha1(t);
+    statement.transactions.x(t => {
+        t.id = hash.sha1([statement.accountNumber, t.date, t.description, t.amount, t.balance]);
         const _statement = Object.assign({}, statement);
         delete _statement.transactions;
         delete _statement.attachments;

@@ -1,17 +1,18 @@
-const {EMPTY} = require('rxjs');
-const {mergeAll, mergeMap, expand, map, tap, concatMap, pluck, concatAll, take, filter} = require('rxjs/operators');
+const {EMPTY} = require('rxjs/index');
+const {mergeAll, mergeMap, expand, map, tap, concatMap, pluck, concatAll, take, filter, iif} = require('rxjs/operators/index');
 const util = require('util');
 const GMAIL_GET_MESSAGES_CHUNK_SIZE = process.env.APP_GMAIL_GET_MESSAGES_CHUNK_SIZE || 100;
 const GMAIL_ATTACHMENT_EXTENSION = 'csv';
 const GMAIL_DEFAULT_LABEL = 'INBOX';
 const {listGmailResource$, getGmailResource$} = require('./GmailHelper');
+const moment = require('moment/moment');
 
-function findAttachmentsByLabel$(labelName, attachmentExtension) {
-    return attachmentsByLabel$(labelName, attachmentExtension);
+function findAttachmentsByLabel$(labelName = GMAIL_DEFAULT_LABEL, fromDate = new Date, toDate = new Date(), attachmentExtension = GMAIL_ATTACHMENT_EXTENSION) {
+    return attachmentsByLabel$(labelName, fromDate, toDate, attachmentExtension);
 }
 
-const attachmentsByLabel$ = (labelName = GMAIL_DEFAULT_LABEL, attachmentExtension = GMAIL_ATTACHMENT_EXTENSION) =>
-    messagesByLabel$(labelName).pipe(
+const attachmentsByLabel$ = (labelName, fromDate, toDate, attachmentExtension) =>
+    messagesByLabel$(labelName, fromDate, toDate).pipe(
         mergeAll(),
         concatMap(msg =>
             getGmailResource$('messages', {id: msg.id}).pipe(
@@ -29,21 +30,29 @@ const attachmentsByLabel$ = (labelName = GMAIL_DEFAULT_LABEL, attachmentExtensio
         ),
     );
 
-const messagesByLabel$ = (labelName, chunkSize = GMAIL_GET_MESSAGES_CHUNK_SIZE) =>
-    labelByName$(labelName).pipe(
+const messagesByLabel$ = (labelName, fromDate, toDate) => {
+    const startOfFromDate = moment.utc(fromDate).startOf('day').unix();
+    const endOfToDate = moment.utc(toDate).endOf('day').unix();
+    return labelByName$(labelName).pipe(
         pluck('id'),
         concatMap(labelId => {
             const __getNextPageOfMessages$ = (nextPageToken) => {
-                const options = {labelIds: [labelId], maxResults: chunkSize};
+                const options = {
+                    labelIds: [labelId],
+                    maxResults: GMAIL_GET_MESSAGES_CHUNK_SIZE,
+                    q: `after:${startOfFromDate} before:${endOfToDate}`
+                };
                 nextPageToken && Object.assign(options, {pageToken: nextPageToken});
                 return listGmailResource$('messages', options);
             };
             return __getNextPageOfMessages$().pipe(
                 expand(result => result.data.nextPageToken ? __getNextPageOfMessages$(result.data.nextPageToken) : EMPTY),
+                filter(result => result.data.messages),
                 pluck('data', 'messages'),
             );
         }),
     );
+};
 
 const labelByName$ = (name) => labels$.pipe(concatAll(), filter(l => l.name === name), take(1));
 
