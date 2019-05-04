@@ -8,13 +8,10 @@ pipeline {
     }
   }
   stages {
-    stage('Run maven') {
+    stage('Test') {
       steps {
         container('docker') {
           sh 'docker version'
-        }
-        container('node') {
-          sh 'node --version'
         }
       }
     }
