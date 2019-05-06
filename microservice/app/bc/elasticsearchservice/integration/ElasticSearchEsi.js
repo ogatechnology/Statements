@@ -10,7 +10,7 @@ const TYPE = '_doc';
 async function saveTransactions(transactions) {
     const bulkRequests = [];
     for (let transaction of transactions) {
-        bulkRequests.push({"index": {"_index": INDEX, "_type": TYPE, "_id": transaction.x}});
+        bulkRequests.push({"index": {"_index": INDEX, "_type": TYPE, "_id": transaction.id}});
         bulkRequests.push(JSON.stringify(transaction));
     }
 
