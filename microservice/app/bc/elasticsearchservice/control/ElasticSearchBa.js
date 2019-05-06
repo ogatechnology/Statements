@@ -15,7 +15,7 @@ async function saveStatement(statement) {
 
 function createElasticSearchTransactionsFromStatement(statement) {
     const transactions = [];
-    statement.transactions.x(t => {
+    statement.transactions.forEach(t => {
         t.id = hash.sha1([statement.accountNumber, t.date, t.description, t.amount, t.balance]);
         const _statement = Object.assign({}, statement);
         delete _statement.transactions;
