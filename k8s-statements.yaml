@@ -1,3 +1,11 @@
+apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: google-app-credentials
+  data:
+    google-application-credentials.json: |-
+      topsecret
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -18,7 +26,7 @@ spec:
         - name: statements
           image: ogatechnology/statements
           volumeMounts:
-            - name: credentials-data
+            - name: google-app-credentials
               mountPath: "/etc/statements/"
           env:
             - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -36,6 +44,6 @@ spec:
           ports:
             - containerPort: 3000
       volumes:
-        - name: credentials-data
+        - name: google-app-credentials
           configMap:
-              name: credentials-google
+              name: google-app-credentials

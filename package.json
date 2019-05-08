@@ -2,9 +2,9 @@
   "name": "scraper",
   "version": "1.0.0",
   "description": "Scrape for bank statements",
-  "main": "app/index.js",
+  "main": "../app/index.js",
   "scripts": {
-    "test": "mocha --timeout 15000 --recursive test",
+    "test": "microservice/node_modules/.bin/mocha --timeout 15000 --recursive ../test",
     "start": "node app/Server.js"
   },
   "author": "Joseph Okharedia",
