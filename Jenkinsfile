@@ -42,7 +42,7 @@ pipeline {
             container('docker') {
                 withDockerRegistry([ credentialsId: "docker", url: "" ]) {
                     sh """
-                      Creating IMAGE: ${IMAGE}:${CURRENT_TAG}
+                      echo Creating IMAGE: ${IMAGE}:${CURRENT_TAG}
                       docker build -t ${IMAGE}:latest .
                       docker tag ${IMAGE}:latest ${IMAGE}:${CURRENT_TAG}
                       docker push ${IMAGE}:${CURRENT_TAG}
