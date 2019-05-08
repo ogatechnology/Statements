@@ -3,17 +3,39 @@ kind: Pod
 metadata:
   labels:
     name: jenkins-slave
-  spec:
-    containers:
-      - name: docker
-        image: docker
-        volumeMounts:
-          - name: docker-sock-volume
-            mountPath: /var/run/docker.sock
-        command:
-          - cat
-        tty: true
-        volumes:
-          - name: docker-sock-volume
-            hostPath:
-            path: /var/run/docker.sock
+spec:
+  containers:
+    - name: kubectl
+      image: lachlanevenson/k8s-kubectl
+      command: ['cat']
+      tty: true
+    - name: elasticsearch
+      image: docker.elastic.co/elasticsearch/elasticsearch:6.7.0
+      readinessProbe:
+        httpGet:
+          path: /
+          port: 9200
+        initialDelaySeconds: 30
+        periodSeconds: 3
+      securityContext:
+        fsGroup: 1000
+      ports:
+        - containerPort: 9200
+      env:
+        - name: discovery.type
+          value: single-node
+    - name: docker
+      image: docker
+      command: ['cat']
+      tty: true
+      volumeMounts:
+        - name: dockersock
+          mountPath: /var/run/docker.sock
+    - name: node
+      image: node:8
+      command: ['cat']
+      tty: true
+  volumes:
+    - name: dockersock
+      hostPath:
+        path: /var/run/docker.sock

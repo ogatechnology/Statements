@@ -4,7 +4,7 @@
   "description": "Get bank statements from gmail",
   "main": "app/Server.js",
   "scripts": {
-    "test": "node_modules/.bin/mocha --timeout 15000 --recursive ../test",
+    "test": "node_modules/.bin/mocha --timeout 15000 --recursive test",
     "start": "node app/Server.js"
   },
   "author": "Joseph Okharedia",
