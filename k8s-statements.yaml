@@ -1,7 +1,7 @@
 apiVersion: v1
-  kind: ConfigMap
-  metadata:
-    name: google-app-credentials
+kind: ConfigMap
+metadata:
+  name: google-app-credentials
   data:
     google-application-credentials.json: |-
       topsecret
