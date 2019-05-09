@@ -3,8 +3,7 @@ kind: ConfigMap
 metadata:
   name: google-app-credentials
 data:
-  google-application-credentials.json: |
-    topsecret
+  google-application-credentials.json: topsecret
 ---
 apiVersion: apps/v1
 kind: Deployment
