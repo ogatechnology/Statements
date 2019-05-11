@@ -15,13 +15,13 @@ const app = express();
 app.get('/', (req, res) => res.send('pong'));
 app.get('/statements/:label', (req, res) => {
     const {query} = url.parse(req.url, true);
-    const force = query['force'] !== undefined && query['force'] !== 'false' && query['force'] !== false ;
-    try {
-        !force && lock.acquireLock();
-    } catch (e) {
-        res.send(`scraping was last run ${e.message} and might still be in process. Please try again later.`);
-        return;
-    }
+    // const force = query['force'] !== undefined && query['force'] !== 'false' && query['force'] !== false ;
+    // try {
+    //     !force && lock.acquireLock();
+    // } catch (e) {
+    //     res.send(`scraping was last run ${e.message} and might still be in process. Please try again later.`);
+    //     return;
+    // }
 
 
     const label = req.params['label'];
