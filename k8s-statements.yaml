@@ -28,7 +28,7 @@ spec:
             httpGet:
               path: /
               port: 3000
-            initialDelaySeconds: 30
+            initialDelaySeconds: 3
             periodSeconds: 3
           volumeMounts:
             - name: google-app-credentials
