@@ -24,6 +24,12 @@ spec:
       containers:
         - name: statements
           image: ogatechnology/statements
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 3
           volumeMounts:
             - name: google-app-credentials
               mountPath: "/etc/statements/"
