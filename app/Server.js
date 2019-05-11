@@ -36,7 +36,6 @@ app.get('/statements/:label', (req, res) => {
     const fromDate = (query['fromDate'] && moment(query['fromDate']).toDate()) || new Date();
     const toDate = (query['toDate'] && moment(query['toDate']).toDate()) || new Date();
 
-    res.send(moment());
     console.log(`Retrieving statement in label:${label} fromDate:${fromDate}, toDate:${toDate}`);
     const startTime = moment();
     let countStatements = 0;
@@ -52,10 +51,35 @@ app.get('/statements/:label', (req, res) => {
         .subscribe
         (
             () => console.log(`Counted ${countTransactions} transactions so far`),
-            (e) => console.error(`Error scraping statements in label:${label} ex:${e}`, e),
+            (e) => {
+                const timeElapsed = moment().diff(startTime, 'seconds');
+                console.error(`Error scraping statements in label:${label} ex:${e}`, e);
+                res.status(500).send({
+                    startTime,
+                    endTime: moment(),
+                    timeElapsed,
+                    label,
+                    fromDate,
+                    toDate,
+                    countStatements,
+                    countTransactions,
+                    error: e.message
+                });
+            },
             () => {
+                const timeElapsed = moment().diff(startTime, 'seconds');
                 console.log(`Imported ${countStatements} statements and ${countTransactions} transactions`);
-                console.log(`Finished scraping for label ${label} in ${moment().diff(startTime, 'seconds')} seconds`)
+                console.log(`Finished scraping for label ${label} in ${timeElapsed} seconds`);
+                res.status(200).send({
+                    startTime,
+                    endTime: moment(),
+                    timeElapsed,
+                    label,
+                    fromDate,
+                    toDate,
+                    countStatements,
+                    countTransactions,
+                });
             }
         );
 
