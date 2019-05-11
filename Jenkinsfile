@@ -6,34 +6,42 @@ pipeline {
       yamlFile 'k8s-jenkins-agent.yaml'
     }
   }
+  options {
+      buildDiscarder(logRotator(numToKeepStr: '3'))
+  }
   environment {
+      APP_NAME='statements'
       GOOGLE_APPLICATION_CREDENTIALS=credentials('google-serviceaccount')
       JENKINS_SERVICEACCOUNT=credentials('jenkins-serviceaccount')
       APP_GOOGLE_AUTHORIZED_EMAIL_ADDRESS='joseph@okharedia.com'
-      IMAGE='ogatechnology/statements'
+      IMAGE="ogatechnology/$APP_NAME"
       KUBERNETES_FILE='k8s-statements.yaml'
-      CURRENT_TAG = """${sh (script: 'date +%Y-%m-%d_%H-%M_$BUILD_NUMBER', returnStdout: true).trim()}"""
+      CURRENT_TAG=sh(script: 'date +%Y-%m-%d_%H-%M_$BUILD_NUMBER', returnStdout: true).trim()
+      IMAGE_TAG="$IMAGE:$CURRENT_TAG"
   }
   stages {
     stage('Checkout') {
         steps {
-            git branch: 'master', credentialsId: 'github', url: 'https://github.com/ogatechnology/Statements.git'
             sh 'ls -lah'
         }
     }
-    stage('Npm build') {
+    stage('npm build') {
       steps {
         container('node') {
-            sh 'npm -version'
-            sh 'npm install'
+            sh '''
+              npm -version
+              npm install
+            '''
         }
       }
     }
-    stage('Npm test') {
+    stage('npm test') {
         steps {
             container('node') {
-                sh """echo Test with email address $APP_GOOGLE_AUTHORIZED_EMAIL_ADDRESS"""
-                sh 'npm test'
+                sh '''
+                  echo Test with email address $APP_GOOGLE_AUTHORIZED_EMAIL_ADDRESS
+                  npm test
+                '''
             }
         }
     }
@@ -41,31 +49,34 @@ pipeline {
         steps {
             container('docker') {
                 withDockerRegistry([ credentialsId: "docker", url: "" ]) {
-                    sh """
-                      echo Creating IMAGE: ${IMAGE}:${CURRENT_TAG}
+                    sh '''
+                      echo Creating IMAGE: ${IMAGE_TAG}
                       docker build -t ${IMAGE}:latest .
-                      docker tag ${IMAGE}:latest ${IMAGE}:${CURRENT_TAG}
-                      docker push ${IMAGE}:${CURRENT_TAG}
+                      docker tag ${IMAGE}:latest ${IMAGE_TAG}
+                      docker push ${IMAGE_TAG}
                       docker push ${IMAGE}:latest
-                    """
+                    '''
                 }
             }
         }
     }
     stage('Tag & prepare deployment') {
         steps {
-            sh """
-              CREDENTIALS=`cat $GOOGLE_APPLICATION_CREDENTIALS`
-              sed -i -r 's/( *image: *).*/\\1$CURRENT_TAG/g' $KUBERNETES_FILE
-              sed -i /topsecret/$CREDENTIALS/g
-              cat $KUBERNETES_FILE
-            """
+            container('node') {
+                sh '''
+                  echo Updating kubernetes config with image $IMAGE_TAG
+                  credentials=`cat $GOOGLE_APPLICATION_CREDENTIALS | tr -d '\n\r'` | sed "s/^/'/;s/$/'/"
+                  perl -pi -e 's^( *image: *).*^$1$ENV{IMAGE_TAG}^g' $KUBERNETES_FILE
+                  perl -pi -e "s^topsecret^\$credentials\^g" $KUBERNETES_FILE
+                  cat $KUBERNETES_FILE
+                '''
+            }
         }
     }
     stage('Deploy') {
         steps {
             container('kubectl') {
-                sh """
+                sh '''
                   kubectl version
                   kubectl config view
                   kubectl config set-cluster mycluster --server=https://kubernetes
@@ -76,7 +87,7 @@ pipeline {
                   alias kubectl="kubectl --insecure-skip-tls-verify"
                   kubectl apply -f $KUBERNETES_FILE
                   kubectl wait --for=condition=available --timeout=600s deployment/statements
-                """
+                '''
             }
         }
     }
