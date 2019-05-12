@@ -65,9 +65,7 @@ pipeline {
             container('node') {
                 sh '''
                   echo Updating kubernetes config with image $IMAGE_TAG
-                  credentials=`cat $GOOGLE_APPLICATION_CREDENTIALS | tr -d '\\r\\n' | perl -pe 's/\\\\\\/\\\\\\\\\\\\\\/g'`
                   perl -pi -e 's^( *image: *).*^$1$ENV{IMAGE_TAG}^g' $KUBERNETES_FILE
-                  perl -pi -e "s^topsecret^$credentials^g" $KUBERNETES_FILE
                   cat $KUBERNETES_FILE
                 '''
             }
