@@ -16,7 +16,7 @@ pipeline {
       APP_GOOGLE_AUTHORIZED_EMAIL_ADDRESS='joseph@okharedia.com'
       IMAGE="ogatechnology/$APP_NAME"
       KUBERNETES_FILE='k8s-statements.yaml'
-      CURRENT_TAG=sh(script: 'date +%Y-%m-%d_%H-%M_$BUILD_NUMBER', returnStdout: true).trim()
+      CURRENT_TAG=sh(script: 'TZ=Africa/Johannesburg date +%Y-%m-%d_%H-%M_$BUILD_NUMBER', returnStdout: true).trim()
       IMAGE_TAG="$IMAGE:$CURRENT_TAG"
   }
   stages {
