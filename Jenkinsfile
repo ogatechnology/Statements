@@ -20,9 +20,13 @@ pipeline {
       IMAGE_TAG="$IMAGE:$CURRENT_TAG"
   }
   stages {
-    stage('Checkout') {
+    stage('Prepare pipeline') {
         steps {
             sh 'ls -lah'
+            script {
+                currentBuild.displayName = "${CURRENT_TAG}"
+                currentBuild.description = "${IMAGE_TAG}"
+            }
         }
     }
     stage('npm build') {
