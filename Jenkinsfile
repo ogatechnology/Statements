@@ -24,7 +24,6 @@ pipeline {
         steps {
             sh 'ls -lah'
             script {
-                currentBuild.displayName = "${CURRENT_TAG}"
                 currentBuild.description = "${IMAGE_TAG}"
             }
         }
